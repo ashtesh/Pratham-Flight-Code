@@ -2,7 +2,7 @@
 #define QUEST_H
 
 #define SS_GAIN 3.3
-#define SS_MAX_ANGLE 85
+#define SS_MAX_ANGLE 60
 #define MAG_WEIGHT 0.9
 #define N_SS 6
 

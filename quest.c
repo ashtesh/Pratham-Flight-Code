@@ -17,15 +17,25 @@ uint8_t quest(vector v_B_c, vector v_sun_c, quaternion q_triad, uint8_t * p_w_ct
   vector v_triad;
   float mu, nu, rho, k, triad;
   
+
+
+  sun_adc[0] = 3.1065;
+  sun_adc[1] = 0;
+  sun_adc[2] = 0.4370;
+  sun_adc[3] = 0;
+  sun_adc[4] = 1.0244;
+  sun_adc[5] = 0;
+  
   for(i = 0; i < N_SS; i++)
   {
     //Confirm SS_GAIN value and whether we have to use SS_MAX_ANGLE
-    if(sun_adc[i] < (0.087 * SS_GAIN)) // cos(85) = 0.087; earlier it was 0.5, changed by amolika
+    if(sun_adc[i] < (0.5 * SS_GAIN)) // cos(85) = 0.087; earlier it was 0.5, changed by amolika
       num_dark_sensors++;
   }
   if(num_dark_sensors == N_SS)
     light = 0;
   
+  printf("light = %d\n",light);
   if(light)
   {
     if(!w_ctrl)
@@ -45,9 +55,9 @@ uint8_t quest(vector v_B_c, vector v_sun_c, quaternion q_triad, uint8_t * p_w_ct
     {
       j = i * 2;
       if(sun_adc[j] > sun_adc[j + 1])
-        v_sun_m[i] = (float)sun_adc[j];
+        v_sun_m[i] = sun_adc[j];
       else
-        v_sun_m[i] = -1 * (float)sun_adc[j + 1];
+        v_sun_m[i] = -1 * sun_adc[j + 1];
     }
     convert_unit_vector(v_sun_m);
 	/*
@@ -58,9 +68,14 @@ uint8_t quest(vector v_B_c, vector v_sun_c, quaternion q_triad, uint8_t * p_w_ct
 	    transmit_UART0(sent[i]);
     }
 	*/
-    v_B_m[0] = Current_state.mm.B_x;
-    v_B_m[1] = Current_state.mm.B_y;
-    v_B_m[2] = Current_state.mm.B_z;
+    for(i=0; i<3;i++)
+    {
+      printf("%f\n",v_sun_m[i]);
+    }
+
+    v_B_m[0] = 2.1315e-5;//Current_state.mm.B_x;
+    v_B_m[1] = 1.3894e-6;//Current_state.mm.B_y;
+    v_B_m[2] = -3.8883e-6;//Current_state.mm.B_z;
     
     vector_cross_product(v_B_m, v_sun_m, v_cross_m);
     convert_unit_vector(v_cross_m);
@@ -125,6 +140,10 @@ uint8_t quest(vector v_B_c, vector v_sun_c, quaternion q_triad, uint8_t * p_w_ct
 void omega_estimation(quaternion q_B, vector v_w)
 {
   static quaternion q_B_old;
+  q_B_old[0] = -0.6972;
+  q_B_old[1] = 0.2356;
+  q_B_old[2] = 0.4697;
+  q_B_old[3] = 0.4876;
   quaternion dq, q;
   vector e, de, v_w_temp;
   static vector v_w_old = { 0.0, 0.0, 0.0 };
@@ -169,7 +188,7 @@ for (int i=0;i<3;i=i+1)
 {
 	sent[i] = (uint8_t)(abs(v_w[i]*10000));
 	transmit_UART0(sent[i]);
-	/*if(v_m[i]<0)
+	if(v_m[i]<0)
 	transmit_UART0(0x01);
 	else
 	transmit_UART0(0x00);
